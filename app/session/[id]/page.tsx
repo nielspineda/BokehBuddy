@@ -33,14 +33,15 @@ const PRIORITY_CONFIG = {
   nice_to_have: { label: 'Nice to Have', color: 'bg-stone-50 text-stone-500' },
 }
 
-export default async function SessionPage({ params }: { params: { id: string } }) {
-  const supabase = createClient()
+export default async function SessionPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) redirect('/login')
 
   const [sessionResult, gearResult] = await Promise.all([
-    supabase.from('session_plans').select('*').eq('id', params.id).eq('user_id', user.id).single(),
+    supabase.from('session_plans').select('*').eq('id', id).eq('user_id', user.id).single(),
     supabase.from('gear_items').select('*').eq('user_id', user.id),
   ])
 
